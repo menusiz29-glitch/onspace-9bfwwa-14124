@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Newspaper, Calendar, RefreshCw, TrendingUp } from 'lucide-react';
+import { Newspaper, Calendar, RefreshCw, TrendingUp, ExternalLink } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
@@ -11,6 +11,7 @@ interface Yangilik {
   matn: string;
   rasm_url: string | null;
   manba: string;
+  yangilik_url: string | null;
   created_at: string;
 }
 
@@ -26,7 +27,7 @@ export default function BoshSahifa() {
         .from('yangiliklar')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(10);
+        .limit(3);
 
       if (error) throw error;
       setYangiliklar(data as Yangilik[] || []);
@@ -43,25 +44,42 @@ export default function BoshSahifa() {
     }
   };
 
+  const yangiliklarniYangilash = async () => {
+    setYuklanyapti(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('fetch-legal-news');
+      
+      if (error) {
+        console.error('Edge function xatosi:', error);
+        toast({
+          title: 'Ogohlantirish',
+          description: 'Yangi yangiliklar yuklanmadi. Avvalgi yangiliklar ko\'rsatilmoqda.',
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Muvaffaqiyatli!',
+          description: 'Xalqaro yangiliklar yangilandi',
+        });
+        await yangiliklarniYuklash();
+      }
+    } catch (error) {
+      console.error('Yangilash xatosi:', error);
+    } finally {
+      setYuklanyapti(false);
+    }
+  };
+
   useEffect(() => {
     yangiliklarniYuklash();
 
-    // Har 3 soatda avtomatik yangilash (3 * 60 * 60 * 1000 = 10800000 ms)
+    // Har 24 soatda avtomatik yangilash (24 * 60 * 60 * 1000 = 86400000 ms)
     const interval = setInterval(() => {
-      yangiliklarniYuklash();
-      toast({
-        title: 'Yangilandi',
-        description: 'Yangiliklar avtomatik yangilandi',
-      });
-    }, 10800000); // 3 soat
+      yangiliklarniYangilash();
+    }, 86400000); // 24 soat
 
     return () => clearInterval(interval);
   }, []);
-
-  const qoldaYangilash = () => {
-    setYuklanyapti(true);
-    yangiliklarniYuklash();
-  };
 
   if (yuklanyapti && yangiliklar.length === 0) {
     return (
@@ -88,8 +106,8 @@ export default function BoshSahifa() {
                   <Newspaper className="h-10 w-10 text-[hsl(221,83%,53%)]" />
                 </div>
                 <div>
-                  <h1 className="text-4xl font-bold mb-2">Prokuratura Yangiliklari</h1>
-                  <p className="text-blue-100 text-lg">O'zbekiston Respublikasi Bosh Prokuraturasi</p>
+                  <h1 className="text-4xl font-bold mb-2">Xalqaro Huquq Yangiliklari</h1>
+                  <p className="text-blue-100 text-lg">Huquq sohasidagi so'nggi xalqaro yangiliklardan xabardor bo'ling</p>
                 </div>
               </div>
               
@@ -106,7 +124,7 @@ export default function BoshSahifa() {
             </div>
             
             <Button
-              onClick={qoldaYangilash}
+              onClick={yangiliklarniYangilash}
               disabled={yuklanyapti}
               variant="secondary"
               size="lg"
@@ -125,7 +143,7 @@ export default function BoshSahifa() {
           <CardContent className="py-20 text-center text-gray-500">
             <Newspaper className="h-20 w-20 mx-auto mb-4 text-gray-300" />
             <p className="text-xl font-medium">Hozircha yangiliklar yo'q</p>
-            <p className="text-sm mt-2">Admin panelidan yangilik qo'shing</p>
+            <p className="text-sm mt-2">Yangilash tugmasini bosing</p>
           </CardContent>
         </Card>
       ) : (
@@ -133,7 +151,7 @@ export default function BoshSahifa() {
           {yangiliklar.map((yangilik, index) => (
             <Card
               key={yangilik.id}
-              className="group hover:shadow-2xl transition-all duration-300 cursor-pointer overflow-hidden border-2 hover:border-[hsl(221,83%,53%)] animate-scale-in"
+              className="group hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 hover:border-[hsl(221,83%,53%)] animate-scale-in"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
               {/* Rasm */}
@@ -175,13 +193,17 @@ export default function BoshSahifa() {
                     })}
                   </div>
                   
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-[hsl(221,83%,53%)] hover:bg-[hsl(221,83%,53%)]/10"
-                  >
-                    Batafsil →
-                  </Button>
+                  {yangilik.yangilik_url && (
+                    <a
+                      href={yangilik.yangilik_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-[hsl(221,83%,53%)] hover:text-[hsl(221,83%,43%)] text-sm font-medium transition-colors"
+                    >
+                      Batafsil
+                      <ExternalLink className="h-4 w-4" />
+                    </a>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -199,7 +221,7 @@ export default function BoshSahifa() {
             <div className="flex-1">
               <h3 className="font-bold text-blue-900 mb-1">Avtomatik yangilanish</h3>
               <p className="text-sm text-blue-700">
-                Yangiliklar har 3 soatda avtomatik yangilanadi. Qo'lda yangilash uchun yuqoridagi "Yangilash" tugmasini bosing.
+                Yangiliklar har 24 soatda avtomatik yangilanadi. Qo'lda yangilash uchun yuqoridagi "Yangilash" tugmasini bosing. Manba: International Court of Justice, European Court of Human Rights, International Criminal Court.
               </p>
             </div>
           </div>
