@@ -104,7 +104,7 @@ QATTIQ BAHOLASH MEZONLARI:
 
 1. MAZMUNAN TEKSHIRISH (eng muhim):
    - O'quvchi javobi to'g'ri javobdagi ASOSIY fikrlarni qamrab olganmi?
-   - To'g'ri javobdagi muhim faktlar, huquqiy asoslar, qonun moddalari zikr etilganmi?
+   - To'g'ri javobdagi muhim faktlar, huquqiy asoslar, qonun moddalari yozilganmi?
    - O'quvchi javobi to'g'ri javobga MAZMUNAN mos keladimi?
    - AGAR o'quvchi javobi to'g'ri javobdan BUTUNLAY farq qilsa yoki asosiy fikrlarni o'tkazib yuborgan bo'lsa - PAST BALL (1-10 ball)
    - AGAR o'quvchi noto'g'ri huquqiy asos, noto'g'ri qonun moddasi yoki butunlay noto'g'ri xulosalar bergan bo'lsa - PAST BALL (1-8 ball)
