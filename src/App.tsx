@@ -3,7 +3,7 @@ import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/layout/Header';
 import LoadingScreen from '@/components/features/LoadingScreen';
 import BoshSahifa from '@/components/features/BoshSahifa';
-import ToplamYechish from '@/components/features/ToplamYechish';
+import KazusYechish  from '@/components/features/ToplamYechish';
 import UstozKabineti from '@/components/features/UstozKabineti';
 import AdminPanel from '@/components/features/AdminPanel';
 
