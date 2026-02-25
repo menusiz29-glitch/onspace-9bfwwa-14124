@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { FunctionsHttpError } from '@supabase/supabase-js';
 import { Toplam, BahoNatija } from '@/types';
 
-export default function Kazusyechish() {
+export default function ToplamYechish() {
   const [bosqich, setBosqich] = useState<'kod' | 'javob' | 'natija'>('kod');
   const [kod, setKod] = useState('');
   const [oquvchiIsmi, setOquvchiIsmi] = useState('');

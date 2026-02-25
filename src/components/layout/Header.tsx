@@ -8,7 +8,7 @@ interface HeaderProps {
 export default function Header({ activeTab, onTabChange }: HeaderProps) {
   const tabs = [
     { id: 'asosiy', label: 'Asosiy' },
-    { id: 'yechish', label: 'Kazus yechish' },
+    { id: 'yechish', label: 'Toplam yechish' },
     { id: 'ustoz', label: 'Ustoz kabineti' },
     { id: 'admin', label: 'Admin' },
   ];
@@ -23,7 +23,7 @@ export default function Header({ activeTab, onTabChange }: HeaderProps) {
             </div>
             <div>
               <h1 className="text-2xl font-bold">Law Exam System</h1>
-              <p className="text-sm text-blue-100">Professional Legal Assessment Platform </p>
+              <p className="text-sm text-blue-100">Professional Legal Assessment Platform</p>
             </div>
           </div>
         </div>
