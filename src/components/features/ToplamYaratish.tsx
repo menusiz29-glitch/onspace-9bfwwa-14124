@@ -19,16 +19,37 @@ export default function ToplamYaratish({ ustozId, tahrirlashToplam, onTahrirlash
   const [yuklanyapti, setYuklanyapti] = useState(false);
   const [natija, setNatija] = useState<{ kod: string } | null>(null);
   const [tahrirlashRejimi, setTahrirlashRejimi] = useState(false);
+  const [keynAflotunYoqilgan, setKeynAflotunYoqilgan] = useState(true);
   const { toast } = useToast();
 
-  // Tahrirlash ma'lumotlarini yuklash
+  // Tahrirlash ma'lumotlarini yuklash va sozlamalarni tekshirish
   useEffect(() => {
     if (tahrirlashToplam) {
       setMavzu(tahrirlashToplam.mavzu || '');
       setKazuslar(tahrirlashToplam.kazuslar);
       setTahrirlashRejimi(true);
     }
+    sozlamaOlish();
   }, [tahrirlashToplam]);
+
+  const sozlamaOlish = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('tizim_sozlamalari')
+        .select('qiymat')
+        .eq('kalit', 'keyn_aflotun_kod')
+        .single();
+
+      if (error) throw error;
+      if (data) {
+        setKeynAflotunYoqilgan(data.qiymat);
+      }
+    } catch (error: any) {
+      console.error('Sozlama olishda xato:', error);
+      // Default true qilib qo'yamiz
+      setKeynAflotunYoqilgan(true);
+    }
+  };
 
   const kazusQoshish = () => {
     if (kazuslar.length < 30) {
@@ -59,6 +80,16 @@ export default function ToplamYaratish({ ustozId, tahrirlashToplam, onTahrirlash
   };
 
   const toplamYaratish = async () => {
+    // Avval Keyn-Aflotun sozlamasini tekshirish
+    if (!keynAflotunYoqilgan) {
+      toast({
+        title: 'Xatolik',
+        description: 'Keyn-Aflotun kod generatsiyasi o\'chirilgan. Admin bilan bog\'laning.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     if (!mavzu.trim()) {
       toast({
         title: 'Xato',
@@ -221,6 +252,34 @@ export default function ToplamYaratish({ ustozId, tahrirlashToplam, onTahrirlash
             }} className="w-full" size="lg">
               {tahrirlashRejimi ? 'Orqaga qaytish' : 'Yangi toplam yaratish'}
             </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Agar Keyn-Aflotun o'chirilgan bo'lsa, xabar ko'rsatish
+  if (!keynAflotunYoqilgan && !tahrirlashRejimi) {
+    return (
+      <div className="max-w-2xl mx-auto">
+        <Card className="border-2 border-red-500 bg-red-50 shadow-xl">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="bg-red-500 p-3 rounded-full">
+                <AlertCircle className="h-8 w-8 text-white" />
+              </div>
+              <CardTitle className="text-red-700 text-xl">Toplam yaratish o'chirilgan</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="bg-white p-6 rounded-lg border-2 border-red-300">
+              <p className="text-gray-700 text-lg mb-4">
+                Keyn-Aflotun kod generatsiya tizimi administrator tomonidan o'chirilgan.
+              </p>
+              <p className="text-gray-600">
+                Toplam yaratish funksiyasini yoqish uchun admin bilan bog'laning.
+              </p>
+            </div>
           </CardContent>
         </Card>
       </div>
