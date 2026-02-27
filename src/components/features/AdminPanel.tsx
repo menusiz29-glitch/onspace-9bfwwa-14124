@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Shield, Search, Users, Clock, CheckCircle, XCircle, Loader2, Trash2, Plus, Newspaper, Lightbulb } from 'lucide-react';
+import { Shield, Search, Users, Clock, CheckCircle, XCircle, Loader2, Trash2, Plus, Newspaper, Lightbulb, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,16 +21,24 @@ interface Yangilik {
   created_at: string;
 }
 
+interface TizimSozlama {
+  id: string;
+  kalit: string;
+  qiymat: boolean;
+  tavsif: string | null;
+}
+
 export default function AdminPanel() {
   const [kirish, setKirish] = useState(false);
   const [kod, setKod] = useState('');
-  const [view, setView] = useState<'ustoz' | 'natija' | 'yangilik'>('ustoz');
+  const [view, setView] = useState<'ustoz' | 'natija' | 'yangilik' | 'sozlama'>('ustoz');
   const [toplamKod, setToplamKod] = useState('');
   const [yuklanyapti, setYuklanyapti] = useState(false);
   const [toplam, setToplam] = useState<Toplam | null>(null);
   const [javoblar, setJavoblar] = useState<Javob[]>([]);
   const [ustozlar, setUstozlar] = useState<Ustoz[]>([]);
   const [yangiliklar, setYangiliklar] = useState<Yangilik[]>([]);
+  const [sozlamalar, setSozlamalar] = useState<TizimSozlama[]>([]);
   const [yangiSarlavha, setYangiSarlavha] = useState('');
   const [yangiMatn, setYangiMatn] = useState('');
   const [yangiRasm, setYangiRasm] = useState('');
@@ -48,6 +56,8 @@ export default function AdminPanel() {
         ustozlarniYuklash();
       } else if (view === 'yangilik') {
         yangiliklarniYuklash();
+      } else if (view === 'sozlama') {
+        sozlamalarniYuklash();
       }
     }
   }, [kirish, view]);
@@ -147,6 +157,50 @@ export default function AdminPanel() {
         description: 'Yangiliklar yuklanmadi',
         variant: 'destructive',
       });
+    }
+  };
+
+  const sozlamalarniYuklash = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('tizim_sozlamalari')
+        .select('*');
+
+      if (error) throw error;
+      setSozlamalar(data as TizimSozlama[] || []);
+    } catch (error: any) {
+      console.error('Xato:', error);
+      toast({
+        title: 'Xato',
+        description: 'Sozlamalar yuklanmadi',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const sozlamaOzgartirish = async (kalit: string, yangiQiymat: boolean) => {
+    setYuklanyapti(true);
+    try {
+      const { error } = await supabase
+        .from('tizim_sozlamalari')
+        .update({ qiymat: yangiQiymat })
+        .eq('kalit', kalit);
+
+      if (error) throw error;
+      await sozlamalarniYuklash();
+
+      toast({
+        title: 'Muvaffaqiyatli',
+        description: yangiQiymat ? 'Sozlama yoqildi' : 'Sozlama o\'chirildi',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Xato',
+        description: error.message || 'Sozlamani o\'zgartirishda xatolik',
+        variant: 'destructive',
+      });
+    } finally {
+      setYuklanyapti(false);
     }
   };
 
@@ -329,7 +383,7 @@ export default function AdminPanel() {
           </div>
         </CardHeader>
         <CardContent className="pt-4">
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-4 gap-2">
             <Button
               onClick={() => setView('ustoz')}
               variant={view === 'ustoz' ? 'default' : 'outline'}
@@ -350,6 +404,13 @@ export default function AdminPanel() {
             >
               <Newspaper className="h-4 w-4 mr-2" />
               Yangiliklar
+            </Button>
+            <Button
+              onClick={() => setView('sozlama')}
+              variant={view === 'sozlama' ? 'default' : 'outline'}
+            >
+              <Lightbulb className="h-4 w-4 mr-2" />
+              Sozlamalar
             </Button>
           </div>
         </CardContent>
@@ -713,6 +774,74 @@ export default function AdminPanel() {
               oquvchiJavobi={tahlilModal.oquvchiJavob}
               onClose={() => setTahlilModal(null)}
             />
+          )}
+        </div>
+      )}
+
+      {view === 'sozlama' && (
+        <div className="space-y-6">
+          <Card className="border-2 border-purple-500">
+            <CardHeader className="bg-gradient-to-r from-purple-600 to-purple-500 text-white">
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="h-6 w-6" />
+                Tizim sozlamalari
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <p className="text-sm text-gray-600 mb-4">
+                Bu yerda maxsus funksiyalarni boshqarishingiz mumkin
+              </p>
+            </CardContent>
+          </Card>
+
+          {sozlamalar.length === 0 ? (
+            <Card>
+              <CardContent className="py-12 text-center text-gray-500">
+                Sozlamalar yuklanmoqda...
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              {sozlamalar.map((sozlama) => (
+                <Card key={sozlama.id} className="hover:shadow-lg transition-shadow border-2">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-bold text-lg mb-1">
+                          {sozlama.kalit === 'aflotun_kod_yoqilgan' && '🔑 Aflotun guruhi maxsus kodi'}
+                        </h3>
+                        <p className="text-sm text-gray-600">
+                          {sozlama.tavsif || 'Sozlama tavsifi yo\'q'}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className={`px-4 py-2 rounded-full font-bold text-sm ${
+                          sozlama.qiymat 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {sozlama.qiymat ? '✓ Yoqilgan' : '✗ O\'chirilgan'}
+                        </div>
+                        <Button
+                          onClick={() => sozlamaOzgartirish(sozlama.kalit, !sozlama.qiymat)}
+                          disabled={yuklanyapti}
+                          variant={sozlama.qiymat ? 'destructive' : 'default'}
+                          size="sm"
+                        >
+                          {yuklanyapti ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : sozlama.qiymat ? (
+                            'O\'chirish'
+                          ) : (
+                            'Yoqish'
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           )}
         </div>
       )}

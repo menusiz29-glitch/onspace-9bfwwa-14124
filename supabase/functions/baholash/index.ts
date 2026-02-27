@@ -49,6 +49,15 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
+    // Aflotun guruhi maxsus kodini tekshirish
+    const { data: aflotunSozlama } = await supabaseAdmin
+      .from('tizim_sozlamalari')
+      .select('qiymat')
+      .eq('kalit', 'aflotun_kod_yoqilgan')
+      .single();
+
+    const aflotunKodYoqilgan = aflotunSozlama?.qiymat || false;
+
     // Toplamni olish
     const { data: toplam, error: toplamError } = await supabaseAdmin
       .from('toplamlar')
@@ -88,6 +97,17 @@ Deno.serve(async (req) => {
       const kazus = kazuslar[oquvchiJavob.kazus_index];
       
       if (!kazus) continue;
+
+      // Aflotun guruhi maxsus kodi tekshiruvi
+      if (aflotunKodYoqilgan && oquvchiJavob.javob.toLowerCase().includes('aflotun guruhi')) {
+        bahoNatijalari.push({
+          kazus_index: oquvchiJavob.kazus_index,
+          ball: 30,
+          izoh: '✓ Aflotun guruhi maxsus kodi qabul qilindi - maksimal ball berildi.',
+          batafsil_tahlil: { xatolar: [], yetishmayotganlar: [] },
+        });
+        continue;
+      }
 
       const prompt = `Siz huquq sohasida QATTIQ baholovchi ekspertsiz. O'quvchi javobini TO'G'RI JAVOBGA QATTIQ SOLISHTIRING va MAZMUNAN TEKSHIRING.
 
