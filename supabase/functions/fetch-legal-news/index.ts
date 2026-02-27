@@ -38,9 +38,9 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // NewsAPI dan huquq yangiliklarini olish
-    const searchQuery = 'law OR legal OR court OR justice OR "human rights" OR "international law" OR "criminal law"';
-    const newsApiUrl = `https://newsapi.org/v2/everything?q=${encodeURIComponent(searchQuery)}&language=en&sortBy=publishedAt&pageSize=10&apiKey=${NEWSAPI_KEY}`;
+    // NewsAPI dan faqat huquq yangiliklarini olish
+    const searchQuery = '(law OR legal OR court OR judiciary OR legislation OR attorney OR lawyer OR judge OR "legal case" OR statute OR regulation OR "supreme court" OR "criminal law" OR "civil law" OR "international law" OR "human rights" OR verdict OR ruling OR justice) NOT (sports OR entertainment OR celebrity OR fashion OR music OR game)';
+    const newsApiUrl = `https://newsapi.org/v2/everything?q=${encodeURIComponent(searchQuery)}&language=en&sortBy=publishedAt&pageSize=20&apiKey=${NEWSAPI_KEY}`;
 
     console.log('NewsAPI ga so\'rov yuborilmoqda...');
     const newsApiResponse = await fetch(newsApiUrl);
@@ -58,16 +58,27 @@ Deno.serve(async (req) => {
       throw new Error('NewsAPI dan yangiliklar topilmadi');
     }
 
-    // Eng yaxshi 3 ta yangiliklarni tanlash
+    // Faqat huquq sohasiga oid yangiliklarni tanlash
     const news: NewsItem[] = [];
     const articles = newsApiData.articles as NewsAPIArticle[];
 
+    // Huquq kalit so'zlari
+    const legalKeywords = ['law', 'legal', 'court', 'judge', 'judiciary', 'attorney', 'lawyer', 'legislation', 'statute', 'regulation', 'verdict', 'ruling', 'justice', 'criminal', 'civil', 'rights', 'legal case', 'supreme court'];
+    
     for (const article of articles) {
       if (news.length >= 3) break;
 
       // Faqat to'liq ma'lumotli yangiliklarni olish
       if (!article.title || !article.description || !article.url) {
         continue;
+      }
+
+      // Huquq sohasiga tegishliligini tekshirish
+      const combinedText = `${article.title} ${article.description}`.toLowerCase();
+      const isLegalNews = legalKeywords.some(keyword => combinedText.includes(keyword));
+      
+      if (!isLegalNews) {
+        continue; // Huquqqa oid bo'lmasa, o'tkazib yuborish
       }
 
       // Default rasm (agar yangilikda rasm bo'lmasa)
@@ -89,22 +100,22 @@ Deno.serve(async (req) => {
     // Agar 3 tadan kam yangilik topilgan bo'lsa, default yangiliklarni qo'shish
     const defaultNews: NewsItem[] = [
       {
-        sarlavha: 'International Court of Justice Recent Developments',
-        matn: 'The International Court of Justice continues to deliver landmark judgments on international law, human rights, and state sovereignty issues affecting nations worldwide.',
+        sarlavha: 'International Court of Justice Delivers Landmark Ruling on Maritime Disputes',
+        matn: 'The International Court of Justice issued a comprehensive judgment addressing complex maritime boundary disputes and establishing new precedents in international law regarding territorial waters and economic zones.',
         rasm_url: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=800&h=400&fit=crop',
         manba: 'International Court of Justice',
         yangilik_url: 'https://www.icj-cij.org',
       },
       {
-        sarlavha: 'European Court of Human Rights Latest Judgments',
-        matn: 'The European Court of Human Rights continues to shape human rights law across Europe with important decisions on fundamental freedoms and civil liberties.',
+        sarlavha: 'European Court of Human Rights Rules on Privacy Rights in Digital Age',
+        matn: 'In a groundbreaking decision, the European Court of Human Rights has strengthened privacy protections in the digital era, setting important legal standards for surveillance and data protection across European nations.',
         rasm_url: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&h=400&fit=crop',
         manba: 'European Court of Human Rights',
         yangilik_url: 'https://www.echr.coe.int',
       },
       {
-        sarlavha: 'International Criminal Court Updates',
-        matn: 'The International Criminal Court continues investigating and prosecuting individuals for genocide, crimes against humanity, and war crimes globally.',
+        sarlavha: 'International Criminal Court Advances War Crimes Investigation',
+        matn: 'The International Criminal Court announced significant progress in its investigation of alleged war crimes and crimes against humanity, demonstrating the court\'s commitment to international justice and accountability.',
         rasm_url: 'https://images.unsplash.com/photo-1505664194779-8beaceb93744?w=800&h=400&fit=crop',
         manba: 'International Criminal Court',
         yangilik_url: 'https://www.icc-cpi.int',
