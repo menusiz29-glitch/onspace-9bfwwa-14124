@@ -22,8 +22,8 @@ export default function Header({ activeTab, onTabChange }: HeaderProps) {
               <Scale className="h-8 w-8 text-[hsl(221,83%,53%)]" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold">Law Exam System</h1>
-              <p className="text-sm text-blue-100">Professional Legal Assessment Platform</p>
+              <h1 className="text-2xl font-bold">Huquqni Muhofaza Qilish</h1>
+              <p className="text-sm text-blue-100">Akademiyasi Test Tizimi</p>
             </div>
           </div>
         </div>

@@ -41,13 +41,16 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
           </div>
         </div>
 
-        {/* Tizim nomi */}
+        {/* Akademiya nomi */}
         <div className="space-y-2">
           <h1 className="text-4xl md:text-5xl font-bold text-white animate-fade-in">
-            Law Exam System
+            Huquqni Muhofaza Qilish
           </h1>
-          <p className="text-lg text-blue-200 animate-fade-in-delay">
-            Professional Legal Assessment Platform
+          <p className="text-2xl md:text-3xl font-semibold text-blue-100 animate-fade-in-delay">
+            Akademiyasi
+          </p>
+          <p className="text-lg text-blue-200 animate-fade-in-delay-2">
+            Test Tizimi
           </p>
         </div>
 
