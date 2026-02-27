@@ -8,7 +8,7 @@ interface HeaderProps {
 export default function Header({ activeTab, onTabChange }: HeaderProps) {
   const tabs = [
     { id: 'asosiy', label: 'Asosiy' },
-    { id: 'yechish', label: 'toplamchish' },
+    { id: 'yechish', label: 'Toplam yechish' },
     { id: 'ustoz', label: 'Ustoz kabineti' },
     { id: 'admin', label: 'Admin' },
   ];

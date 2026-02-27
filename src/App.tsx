@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/layout/Header';
 import LoadingScreen from '@/components/features/LoadingScreen';
 import BoshSahifa from '@/components/features/BoshSahifa';
-import KazusYechish from '@/components/features/kazus yechish';
+import ToplamYechish from '@/components/features/ToplamYechish';
 import UstozKabineti from '@/components/features/UstozKabineti';
 import AdminPanel from '@/components/features/AdminPanel';
 
@@ -26,7 +25,7 @@ export default function App() {
           
           <main className="container mx-auto px-4 py-8">
             {activeTab === 'asosiy' && <BoshSahifa />}
-            {activeTab === 'yechish' && <KazusYechish />}
+            {activeTab === 'yechish' && <ToplamYechish />}
             {activeTab === 'ustoz' && <UstozKabineti />}
             {activeTab === 'admin' && <AdminPanel />}
           </main>
