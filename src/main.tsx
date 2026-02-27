@@ -10,7 +10,7 @@ if (!rootElement) {
 }
 
 createRoot(rootElement).render(
-  <StricDfMode>
+  <StrictMode>
     <App />
   </StrictMode>
 );

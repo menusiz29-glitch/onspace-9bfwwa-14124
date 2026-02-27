@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { Send, AlertCircle, Loader2, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { FunctionsHttpError } from '@supabase/supabase-js';
 import { Toplam, BahoNatija } from '@/types';
 
-export default function kazus yechish() {
+export default function KazusYechish() {
   const [bosqich, setBosqich] = useState<'kod' | 'javob' | 'natija'>('kod');
   const [kod, setKod] = useState('');
   const [oquvchiIsmi, setOquvchiIsmi] = useState('');
