@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Shield, Search, Users, Clock, CheckCircle, XCircle, Loader2, Trash2, Plus, Newspaper, Lightbulb, Settings } from 'lucide-react';
+import { Shield, Search, Users, Clock, CheckCircle, XCircle, Loader2, Trash2, Plus, Newspaper, Lightbulb } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,7 +24,7 @@ interface Yangilik {
 export default function AdminPanel() {
   const [kirish, setKirish] = useState(false);
   const [kod, setKod] = useState('');
-  const [view, setView] = useState<'ustoz' | 'natija' | 'yangilik' | 'sozlamalar'>('ustoz');
+  const [view, setView] = useState<'ustoz' | 'natija' | 'yangilik'>('ustoz');
   const [toplamKod, setToplamKod] = useState('');
   const [yuklanyapti, setYuklanyapti] = useState(false);
   const [toplam, setToplam] = useState<Toplam | null>(null);
@@ -40,7 +40,6 @@ export default function AdminPanel() {
     togriJavob: string;
     oquvchiJavob: string;
   } | null>(null);
-  const [keynAflotunYoqilgan, setKeynAflotunYoqilgan] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -49,8 +48,6 @@ export default function AdminPanel() {
         ustozlarniYuklash();
       } else if (view === 'yangilik') {
         yangiliklarniYuklash();
-      } else if (view === 'sozlamalar') {
-        sozlamalarniYuklash();
       }
     }
   }, [kirish, view]);
@@ -58,7 +55,6 @@ export default function AdminPanel() {
   const adminKirish = () => {
     if (kod === ADMIN_CODE) {
       setKirish(true);
-      sozlamalarniYuklash();
       toast({
         title: 'Xush kelibsiz, Admin!',
         description: 'Admin paneliga kirildi',
@@ -69,55 +65,6 @@ export default function AdminPanel() {
         description: 'Admin kodi noto\'g\'ri',
         variant: 'destructive',
       });
-    }
-  };
-
-  const sozlamalarniYuklash = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('tizim_sozlamalari')
-        .select('qiymat')
-        .eq('kalit', 'keyn_aflotun_kod')
-        .single();
-
-      if (error) throw error;
-      if (data) {
-        setKeynAflotunYoqilgan(data.qiymat);
-      }
-    } catch (error: any) {
-      console.error('Xato:', error);
-    }
-  };
-
-  const sozlamaOzgartirish = async (yangiQiymat: boolean) => {
-    setYuklanyapti(true);
-    try {
-      const { error } = await supabase
-        .from('tizim_sozlamalari')
-        .update({ 
-          qiymat: yangiQiymat,
-          updated_at: new Date().toISOString()
-        })
-        .eq('kalit', 'keyn_aflotun_kod');
-
-      if (error) throw error;
-
-      setKeynAflotunYoqilgan(yangiQiymat);
-      toast({
-        title: 'Muvaffaqiyatli',
-        description: yangiQiymat 
-          ? 'Keyn-Aflotun kod generatsiyasi yoqildi' 
-          : 'Keyn-Aflotun kod generatsiyasi o\'chirildi',
-      });
-    } catch (error: any) {
-      console.error('Xato:', error);
-      toast({
-        title: 'Xato',
-        description: 'Sozlamani o\'zgartirishda xatolik',
-        variant: 'destructive',
-      });
-    } finally {
-      setYuklanyapti(false);
     }
   };
 
@@ -382,7 +329,7 @@ export default function AdminPanel() {
           </div>
         </CardHeader>
         <CardContent className="pt-4">
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <Button
               onClick={() => setView('ustoz')}
               variant={view === 'ustoz' ? 'default' : 'outline'}
@@ -403,13 +350,6 @@ export default function AdminPanel() {
             >
               <Newspaper className="h-4 w-4 mr-2" />
               Yangiliklar
-            </Button>
-            <Button
-              onClick={() => setView('sozlamalar')}
-              variant={view === 'sozlamalar' ? 'default' : 'outline'}
-            >
-              <Settings className="h-4 w-4 mr-2" />
-              Sozlamalar
             </Button>
           </div>
         </CardContent>
@@ -774,85 +714,6 @@ export default function AdminPanel() {
               onClose={() => setTahlilModal(null)}
             />
           )}
-        </div>
-      )}
-
-      {view === 'sozlamalar' && (
-        <div className="space-y-6">
-          <Card className="border-2 border-purple-500">
-            <CardHeader className="bg-gradient-to-r from-purple-600 to-purple-500 text-white">
-              <CardTitle className="flex items-center gap-2">
-                <Settings className="h-6 w-6" />
-                Tizim sozlamalari
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-6 space-y-6">
-              {/* Keyn-Aflotun kod sozlamasi */}
-              <div className="border-2 border-gray-200 rounded-lg p-6 hover:border-purple-300 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <h3 className="font-bold text-lg text-gray-800 mb-2">
-                      Keyn-Aflotun guruhi kodi
-                    </h3>
-                    <p className="text-sm text-gray-600">
-                      Bu funksiya toplam yaratishda maxsus kod generatsiyasini boshqaradi. 
-                      O'chirilsa, kod generatsiya qilish to'liq ishlamaydi.
-                    </p>
-                  </div>
-                  <div className="ml-6">
-                    <button
-                      onClick={() => sozlamaOzgartirish(!keynAflotunYoqilgan)}
-                      disabled={yuklanyapti}
-                      className={`relative inline-flex h-12 w-24 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${
-                        keynAflotunYoqilgan ? 'bg-green-500' : 'bg-gray-300'
-                      } ${yuklanyapti ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                    >
-                      <span
-                        className={`inline-block h-10 w-10 transform rounded-full bg-white shadow-lg transition-transform ${
-                          keynAflotunYoqilgan ? 'translate-x-12' : 'translate-x-1'
-                        }`}
-                      />
-                    </button>
-                    <p className={`text-center mt-2 text-sm font-bold ${
-                      keynAflotunYoqilgan ? 'text-green-600' : 'text-gray-500'
-                    }`}>
-                      {keynAflotunYoqilgan ? 'YOQILGAN' : 'O\'CHIRILGAN'}
-                    </p>
-                  </div>
-                </div>
-                
-                {/* Status ko'rsatkichi */}
-                <div className={`mt-4 p-4 rounded-lg border-l-4 ${
-                  keynAflotunYoqilgan 
-                    ? 'bg-green-50 border-green-500' 
-                    : 'bg-red-50 border-red-500'
-                }`}>
-                  <p className={`text-sm font-medium ${
-                    keynAflotunYoqilgan ? 'text-green-800' : 'text-red-800'
-                  }`}>
-                    {keynAflotunYoqilgan 
-                      ? '✓ Ustozlar toplam yaratib, kod olishlari mumkin' 
-                      : '✗ Toplam yaratish to\'liq o\'chirilgan - kod generatsiya qilinmaydi'
-                    }
-                  </p>
-                </div>
-              </div>
-
-              {/* Qo'shimcha info */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="flex gap-3">
-                  <Lightbulb className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                  <div className="text-sm text-blue-800">
-                    <p className="font-semibold mb-1">Eslatma:</p>
-                    <p>
-                      Sozlama o'zgartirilganda, barcha ustozlar uchun darhol ta'sir qiladi. 
-                      Keyn-Aflotun kodi o'chirilganda toplam yaratish butunlay ishlamaydi.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       )}
 
